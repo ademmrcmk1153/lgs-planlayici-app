@@ -64,6 +64,8 @@
             <p class="mt-4 text-md text-stone-700">7. Sınıftan 8'e hazırlık yolculuğun burada başlıyor!</p>
         </header>
 
+        <!-- "Program Paylaş / Başkasının Programını Görüntüle" bölümü kaldırıldı -->
+        <!--
         <section class="bg-blue-50 p-4 sm:p-6 rounded-xl shadow-inner mb-8 border border-blue-200">
             <h3 class="text-lg font-semibold text-blue-800 mb-3">Program Paylaş / Başkasının Programını Görüntüle</h3>
             <p class="text-sm text-blue-700 mb-4">Kendi programınızı arkadaşlarınızla paylaşmak için yukarıdaki "Kullanıcı ID'niz" kısmındaki ID'yi kullanın. Başka bir arkadaşınızın programını görüntülemek için ise onun ID'sini aşağıdaki alana girin.</p>
@@ -73,6 +75,7 @@
                 <button id="back-to-my-program-btn" class="bg-gray-500 text-white font-semibold px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors shadow-md flex-shrink-0 hidden">Kendi Programıma Dön</button>
             </div>
         </section>
+        -->
 
         <nav id="day-navigation" class="flex flex-wrap justify-center gap-2 mb-8">
             <button data-day="pazartesi" class="day-tab active px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-stone-200">Pazartesi</button>
@@ -99,17 +102,15 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Firebase importları kaldırıldı
+        // import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        // import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // import { getFirestore, doc, getDoc, setDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global variables for Firebase and current user's schedule - DECLARED ONLY ONCE
-        let db; 
-        let auth;
-        let userId = null;
+        // Firebase ile ilgili global değişkenler kaldırıldı
         let userName = '';
         let userSurname = '';
-        let currentViewUserId = null; 
+        // let currentViewUserId = null; // Kaldırıldı
 
         // Define base schedule structure to ensure consistency
         const baseSchedule = {
@@ -200,21 +201,16 @@
 
         let lgsProgramData = JSON.parse(JSON.stringify(baseSchedule)); // Deep copy base schedule
         
-        // Firebase Configuration (Buraya kopyaladığınız kodu yapıştırdınız)
-        // DİKKAT: Aşağıdaki API anahtarını GitHub gibi herkese açık bir depoya YÜKLEMEYİN.
-        // Eğer bu dosya herkese açıksa, API anahtarınızı Firebase Konsolundan iptal edin ve yeni bir tane oluşturun.
-        // Yeni anahtarınızı buraya yapıştırın.
-        const firebaseConfig = {
-        apiKey: "AIzaSyAlZkaeLCgtEFv5Ag0dKL5lzB9kYhjm6xM",
-     authDomain: "lgs-planla.firebaseapp.com",
-  projectId: "lgs-planla",
-  storageBucket: "lgs-planla.firebasestorage.app",
-  messagingSenderId: "174606157996",
-  appId: "1:174606157996:web:5dcff52dc2feddf4bbf709"
-};
-        
-        // appId artık doğrudan firebaseConfig.projectId'den alınacak
-        const appId = firebaseConfig.projectId; 
+        // Firebase Configuration kaldırıldı.
+        // const firebaseConfig = {
+        //     apiKey: "YENİ OLUŞTURDUĞUNUZ API ANAHTARINIZI BURAYA YAPIŞTIRIN", 
+        //     authDomain: "lgs-planla.firebaseapp.com",
+        //     projectId: "lgs-planla",
+        //     storageBucket: "lgs-planla.firebasestorage.app",
+        //     messagingSenderId: "174606157996",
+        //     appId: "1:174606157996:web:a15088fddcd96068bbf709"
+        // };
+        // const appId = firebaseConfig.projectId; // Kaldırıldı
 
         document.addEventListener('DOMContentLoaded', async function () {
             const welcomeScreen = document.getElementById('welcome-screen');
@@ -226,78 +222,19 @@
             const userIdDisplay = document.getElementById('user-id-display');
             const messageBox = document.getElementById('message-box');
             const loadingSpinner = document.getElementById('loading-spinner');
-            const viewAnotherUserIdInput = document.getElementById('view-another-user-id');
-            const viewAnotherUserButton = document.getElementById('view-another-user-btn');
-            const backToMyProgramButton = document.getElementById('back-to-my-program-btn');
-            const navContainer = document.getElementById('day-navigation'); // Tanımla
-            const scheduleContainer = document.getElementById('schedule-container'); // Tanımla
+            // Program paylaşım bölümü kaldırıldığından ilgili DOM elemanları kaldırıldı
+            // const viewAnotherUserIdInput = document.getElementById('view-another-user-id');
+            // const viewAnotherUserButton = document.getElementById('view-another-user-btn');
+            // const backToMyProgramButton = document.getElementById('back-to-my-program-btn');
+            const navContainer = document.getElementById('day-navigation'); 
+            const scheduleContainer = document.getElementById('schedule-container'); 
 
-            // Başlangıçta hoş geldin ekranını göster, Firebase'in yüklenmesini beklemeden.
+            // Her zaman hoş geldin ekranını göster
             welcomeScreen.classList.remove('hidden');
-            mainAppScreen.classList.add('hidden'); // Ana ekranı gizle
+            mainAppScreen.classList.add('hidden'); 
 
-            // Firebase'i sadece yapılandırma geçerliyse başlat
-            if (firebaseConfig.apiKey && firebaseConfig.projectId) {
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-
-                    // Firebase Kimlik Doğrulama ve ilk yükleme mantığı
-                    onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            userId = user.uid;
-                            currentViewUserId = userId;
-                            const profileLoaded = await loadUserProfile(userId);
-                            if (profileLoaded) {
-                                showMainApp();
-                                await loadUserSchedule(userId);
-                            } else {
-                                // Kullanıcı oturum açmış ama profil verisi yok, isim/soyad almak için hoş geldin ekranını göster
-                                welcomeScreen.classList.remove('hidden');
-                                mainAppScreen.classList.add('hidden');
-                            }
-                        } else {
-                            // Hiçbir kullanıcı oturum açmamış, anonim oturum açmayı dene
-                            try {
-                                showLoading();
-                                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                    await signInWithCustomToken(auth, __initial_auth_token);
-                                } else {
-                                    await signInAnonymously(auth);
-                                }
-                            } catch (error) {
-                                displayMessage(`Oturum açma hatası: ${error.message}`, 'error');
-                                console.error('Auth error during initial load:', error);
-                                welcomeScreen.classList.remove('hidden'); // Hata durumunda hoş geldin ekranını göster
-                                mainAppScreen.classList.add('hidden');
-                            } finally {
-                                hideLoading();
-                            }
-                        }
-                    });
-                } catch (initError) {
-                    displayMessage(`Firebase başlatma hatası: ${initError.message}`, 'error');
-                    console.error('Firebase initialization error:', initError);
-                    // Firebase başlatılamazsa bile hoş geldin ekranı görünsün, ancak kaydetme özelliği çalışmaz.
-                    welcomeScreen.classList.remove('hidden'); 
-                    mainAppScreen.classList.add('hidden');
-                    userNameDisplay.textContent = `Hoş Geldiniz, Misafir!`; // Misafir olarak göster
-                    userIdDisplay.textContent = `Veri kaydedilemiyor.`;
-                    renderSchedule(); // Programı göster ama kaydetme/yükleme çalışmaz
-                    return; // Firebase başlatma hatası varsa daha fazla işlem yapma
-                }
-            } else {
-                displayMessage('Firebase yapılandırması eksik. Veriler kalıcı olarak kaydedilemeyecek.', 'error');
-                console.error('Firebase config is incomplete. Data persistence will not work.');
-                // Eğer Firebase yapılandırması eksikse, hoş geldin ekranını göster.
-                welcomeScreen.classList.remove('hidden'); 
-                mainAppScreen.classList.add('hidden');
-                userNameDisplay.textContent = `Hoş Geldiniz, Misafir!`;
-                userIdDisplay.textContent = `Veri kaydedilemiyor.`;
-                renderSchedule(); 
-                return; 
-            }
+            // Firebase bağlantısı kaldırıldığından artık başlangıçta kimlik doğrulama yapılmayacak.
+            // Kullanıcı verilerini local storage'dan yükle veya yeni kullanıcı oluştur.
 
             function showLoading() {
                 loadingSpinner.classList.remove('hidden');
@@ -326,79 +263,49 @@
                 }, 3000);
             }
 
-            async function saveProfileAndSchedule(uid) {
-                if (!db) {
-                    displayMessage('Veritabanı mevcut değil. Kaydetme işlemi yapılamadı.', 'error');
-                    return;
-                }
+            // Local Storage için anahtar oluştur
+            function getLocalStorageKey(name, surname) {
+                return `lgsPlanner_${name.toLowerCase()}_${surname.toLowerCase()}`;
+            }
+
+            async function saveLocalProfileAndSchedule(name, surname, data) {
                 showLoading();
                 try {
-                    const userProfileRef = doc(db, `artifacts/${appId}/users/${uid}/profile`, 'data');
-                    await setDoc(userProfileRef, { name: userName, surname: userSurname });
-
-                    const userScheduleRef = doc(db, `artifacts/${appId}/public/data/lgs_schedules`, uid);
-                    const serializableProgramData = {};
-                    for (const day in lgsProgramData) {
-                        serializableProgramData[day] = lgsProgramData[day].map(task => ({
-                            ...task,
-                            completed: task.completed || false 
-                        }));
-                    }
-                    await setDoc(userScheduleRef, { schedule: serializableProgramData });
-                    displayMessage('Profil ve program başarıyla kaydedildi!', 'success');
+                    const key = getLocalStorageKey(name, surname);
+                    localStorage.setItem(key, JSON.stringify(data));
+                    displayMessage('Program yerel olarak kaydedildi!', 'success');
                 } catch (error) {
                     displayMessage(`Kaydetme hatası: ${error.message}`, 'error');
-                    console.error('Save error:', error);
+                    console.error('Local save error:', error);
                 } finally {
                     hideLoading();
                 }
             }
 
-            async function loadUserProfile(uid) {
-                if (!db) return false;
+            async function loadLocalSchedule(name, surname) {
                 showLoading();
                 try {
-                    const userProfileRef = doc(db, `artifacts/${appId}/users/${uid}/profile`, 'data');
-                    const profileSnap = await getDoc(userProfileRef);
-                    if (profileSnap.exists()) {
-                        const data = profileSnap.data();
-                        userName = data.name;
-                        userSurname = data.surname;
-                        return true;
-                    }
-                } catch (error) {
-                    displayMessage(`Profil yükleme hatası: ${error.message}`, 'error');
-                    console.error('Load profile error:', error);
-                } finally {
-                    hideLoading();
-                }
-                return false;
-            }
-
-            async function loadUserSchedule(uidToLoad) {
-                if (!db) return false;
-                showLoading();
-                try {
-                    const scheduleRef = doc(db, `artifacts/${appId}/public/data/lgs_schedules`, uidToLoad);
-                    const scheduleSnap = await getDoc(scheduleRef);
-                    if (scheduleSnap.exists()) {
-                        const loadedSchedule = scheduleSnap.data().schedule;
-                        lgsProgramData = JSON.parse(JSON.stringify(baseSchedule)); 
-                        for (const day in loadedSchedule) {
-                            if (lgsProgramData[day]) { 
-                                loadedSchedule[day].forEach((loadedTask, index) => {
-                                    if (lgsProgramData[day][index]) { 
-                                        lgsProgramData[day][index].completed = loadedTask.completed || false;
+                    const key = getLocalStorageKey(name, surname);
+                    const savedData = localStorage.getItem(key);
+                    if (savedData) {
+                        const parsedData = JSON.parse(savedData);
+                        lgsProgramData = parsedData.schedule || JSON.parse(JSON.stringify(baseSchedule));
+                        // Yüklenen veride completed durumu yoksa baseSchedule'dan al
+                        for (const day in baseSchedule) {
+                            if (lgsProgramData[day]) {
+                                lgsProgramData[day].forEach((task, index) => {
+                                    if (baseSchedule[day][index]) {
+                                        task.completed = (parsedData.schedule && parsedData.schedule[day] && parsedData.schedule[day][index]) ? parsedData.schedule[day][index].completed : false;
                                     }
                                 });
                             }
                         }
-                        renderSchedule();
+                        displayMessage('Program yerel olarak yüklendi!', 'success');
                         return true;
                     }
                 } catch (error) {
                     displayMessage(`Program yükleme hatası: ${error.message}`, 'error');
-                    console.error('Load schedule error:', error);
+                    console.error('Local load error:', error);
                 } finally {
                     hideLoading();
                 }
@@ -406,22 +313,15 @@
             }
 
             async function updateTaskCompletion(dayId, taskIndex, completedStatus) {
-                if (!db || currentViewUserId !== userId) { 
-                    displayMessage('Sadece kendi programınızı düzenleyebilirsiniz.', 'info');
-                    return;
-                }
                 showLoading();
                 try {
                     lgsProgramData[dayId][taskIndex].completed = completedStatus;
-                    const userScheduleRef = doc(db, `artifacts/${appId}/public/data/lgs_schedules`, userId);
-                    const serializableProgramData = {};
-                    for (const day in lgsProgramData) {
-                        serializableProgramData[day] = lgsProgramData[day].map(task => ({
-                            ...task,
-                            completed: task.completed 
-                        }));
-                    }
-                    await updateDoc(userScheduleRef, { schedule: serializableProgramData });
+                    const dataToSave = {
+                        name: userName,
+                        surname: userSurname,
+                        schedule: lgsProgramData
+                    };
+                    await saveLocalProfileAndSchedule(userName, userSurname, dataToSave);
                     displayMessage('Görev durumu güncellendi!', 'success');
                 } catch (error) {
                     displayMessage(`Güncelleme hatası: ${error.message}`, 'error');
@@ -432,7 +332,7 @@
             }
 
             function renderSchedule() {
-                const scheduleContainer = document.getElementById('schedule-container'); // scheduleContainer'ı burada tekrar al
+                const scheduleContainer = document.getElementById('schedule-container'); 
                 scheduleContainer.innerHTML = ''; 
 
                 for (const day in lgsProgramData) {
@@ -461,7 +361,7 @@
                             listItem.classList.add('completed');
                         }
                         listItem.innerHTML = `
-                            <input type="checkbox" class="mr-4 h-5 w-5 rounded border-gray-300 text-sky-600 focus:ring-sky-500" ${task.completed ? 'checked' : ''} ${currentViewUserId !== userId ? 'disabled' : ''}>
+                            <input type="checkbox" class="mr-4 h-5 w-5 rounded border-gray-300 text-sky-600 focus:ring-sky-500" ${task.completed ? 'checked' : ''}>
                             <span class="flex-grow">
                                 <span class="font-semibold text-stone-500 mr-2">${task.time}</span> 
                                 <span class="task-text">${task.subject}: ${task.activity}</span>
@@ -470,12 +370,11 @@
                         `;
                         
                         const checkbox = listItem.querySelector('input[type="checkbox"]');
-                        if (currentViewUserId === userId && db) { 
-                            checkbox.addEventListener('change', function(e) {
-                                updateTaskCompletion(day, index, e.target.checked);
-                                e.target.closest('.task-item').classList.toggle('completed', e.target.checked);
-                            });
-                        }
+                        // Artık her zaman kendi programımızı düzenliyoruz, bu yüzden disabled olayı kaldırıldı.
+                        checkbox.addEventListener('change', function(e) {
+                            updateTaskCompletion(day, index, e.target.checked);
+                            e.target.closest('.task-item').classList.toggle('completed', e.target.checked);
+                        });
                         taskList.appendChild(listItem);
                     });
                     scheduleContainer.appendChild(dayContentDiv);
@@ -491,47 +390,27 @@
                 userSurname = welcomeSurnameInput.value.trim();
 
                 if (userName && userSurname) {
-                    if (userId) { 
-                        await saveProfileAndSchedule(userId);
-                        showMainApp();
-                    } else {
-                        displayMessage('Oturum açılamadı. Lütfen tekrar deneyin.', 'error');
+                    // Kullanıcı daha önce kaydedilmiş bir programa sahip mi kontrol et
+                    const loaded = await loadLocalSchedule(userName, userSurname);
+                    if (!loaded) {
+                        // Eğer kaydedilmiş bir program yoksa, baseSchedule'ı kullan
+                        lgsProgramData = JSON.parse(JSON.stringify(baseSchedule));
+                        const dataToSave = {
+                            name: userName,
+                            surname: userSurname,
+                            schedule: lgsProgramData
+                        };
+                        await saveLocalProfileAndSchedule(userName, userSurname, dataToSave);
                     }
+                    showMainApp(); // Ana uygulamayı göster
                 } else {
                     displayMessage('Lütfen adınızı ve soyadınızı girin.', 'error');
                 }
             });
 
-            viewAnotherUserButton.addEventListener('click', async function() {
-                const targetUid = viewAnotherUserIdInput.value.trim();
-                if (targetUid) {
-                    currentViewUserId = targetUid;
-                    const loaded = await loadUserSchedule(targetUid);
-                    if (loaded) {
-                        displayMessage(`${targetUid} kullanıcısının programı yüklendi.`, 'success');
-                        document.querySelectorAll('.task-item input[type="checkbox"]').forEach(checkbox => {
-                            checkbox.disabled = true; 
-                        });
-                        backToMyProgramButton.classList.remove('hidden');
-                    } else {
-                        displayMessage('Belirtilen kullanıcı ID\'sine ait program bulunamadı.', 'error');
-                        currentViewUserId = userId; 
-                        await loadUserSchedule(userId); 
-                    }
-                } else {
-                    displayMessage('Lütfen bir kullanıcı ID\'si girin.', 'info');
-                }
-            });
-
-            backToMyProgramButton.addEventListener('click', async function() {
-                currentViewUserId = userId;
-                await loadUserSchedule(userId);
-                document.querySelectorAll('.task-item input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.disabled = false; 
-                });
-                backToMyProgramButton.classList.add('hidden');
-                displayMessage('Kendi programınıza geri döndünüz.', 'info');
-            });
+            // Program paylaşım ve başkasının programını görüntüleme ile ilgili kodlar kaldırıldı
+            // viewAnotherUserButton.addEventListener('click', ...);
+            // backToMyProgramButton.addEventListener('click', ...);
 
 
             const navContainer = document.getElementById('day-navigation');
@@ -544,7 +423,6 @@
                     });
                     e.target.classList.add('active');
 
-                    // Düzeltme: contentContainer yerine scheduleContainer kullanıldı
                     scheduleContainer.querySelectorAll('.day-content').forEach(content => {
                         content.classList.add('hidden');
                     });
@@ -557,7 +435,7 @@
                 welcomeScreen.classList.add('hidden');
                 mainAppScreen.classList.remove('hidden');
                 userNameDisplay.textContent = `Hoş Geldiniz, ${userName} ${userSurname}!`;
-                userIdDisplay.textContent = `Kullanıcı ID'niz: ${userId}`;
+                userIdDisplay.textContent = `Bu sizin kişisel planlayıcınız.`; // Sabit metin
                 renderSchedule();
             }
         });
