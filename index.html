@@ -155,58 +155,64 @@
                 { time: '09:00 - 10:30', subject: 'Matematik', activity: '📚 Konu Tekrarı & Soru', target: '80 Soru' },
                 { time: '10:30 - 12:00', subject: 'Fen Bilimleri', activity: '🔬 Konu Tekrarı & Soru', target: '80 Soru' },
                 { time: '12:00 - 13:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-' },
-                { time: '13:00 - 13:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
-                { time: '13:30 - 14:00', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
-                { time: '14:00 - 15:00', subject: 'İngilizce', activity: '🇬🇧 Konu Tekrarı & Soru', target: '40 Soru' },
-                { time: '15:00 - 16:00', subject: 'İnkılap Tarihi', activity: '🇹🇷 Konu Tekrarı & Soru', target: '40 Soru' },
-                { time: '16:00 - 16:30', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '20 Soru' },
-                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
-                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🧐 Yanlış Analizi & Dinlenme', target: '-' },
+                { time: '13:00 - 13:30', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
+                { time: '13:30 - 15:00', subject: 'Matematik', activity: 'Soru Çözümü (Farklı Konu/Genel Tekrar)', target: '30', completed: false },
+                { time: '15:00 - 16:30', subject: 'Fen Bilimleri', activity: 'Soru Çözümü (Farklı Konu/Genel Tekrar)', target: '30', completed: false },
+                { time: '16:30 - 17:30', subject: 'İngilizce', activity: 'Kelime Tekrarı & Soru Çözümü (Örn: Unit 2: Teen Life kelimeleri)', target: '40', completed: false },
+                { time: '17:30 - 20:00', subject: 'Mola', activity: 'Akşam Yemeği & Hazırlık', target: '-', completed: false },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-', completed: false },
+                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: 'Yanlış Analizi & Dinlenme', target: '-', completed: false },
             ],
             cuma: [
-                { time: '09:00 - 10:30', subject: 'Türkçe', activity: '✍️ Konu Tekrarı & Soru', target: '80 Soru' },
-                { time: '10:30 - 12:00', subject: 'Matematik', activity: '📚 Konu Tekrarı & Soru', target: '80 Soru' },
-                { time: '12:00 - 13:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-' },
-                { time: '13:00 - 13:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
-                { time: '13:30 - 14:00', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
-                { time: '14:00 - 15:00', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '40 Soru' },
-                { time: '15:00 - 15:45', subject: 'İnkılap Tarihi', activity: '🇹🇷 Konu Tekrarı & Soru', target: '30 Soru' },
-                { time: '15:45 - 16:15', subject: 'İngilizce', activity: '🇬🇧 Konu Tekrarı & Soru', target: '20 Soru' },
-                { time: '17:30 - 19:00', subject: 'Basketbol Kursu', activity: '🏀 Basketbol Antrenmanı', target: '-' },
-                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
-                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🧐 Yanlış Analizi & Dinlenme', target: '-' },
+                { time: '09:00 - 10:30', subject: 'Türkçe', activity: '✍️ Konu Tekrarı & Soru', target: '80 Soru', completed: false },
+                { time: '10:30 - 12:00', subject: 'Matematik', activity: '📚 Konu Tekrarı & Soru', target: '80 Soru', completed: false },
+                { time: '12:00 - 13:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-', completed: false },
+                { time: '13:00 - 14:00', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '40 Soru', completed: false },
+                { time: '14:00 - 15:00', subject: 'İnkılap Tarihi', activity: '🇹🇷 Konu Tekrarı & Soru', target: '30 Soru', completed: false },
+                { time: '15:00 - 15:30', subject: 'Mola', activity: 'Kısa Dinlenme', target: '-', completed: false },
+                { time: '15:30 - 17:00', subject: 'Türkçe', activity: 'Soru Çözümü (Farklı Konu/Genel Tekrar)', target: '30', completed: false },
+                { time: '17:00 - 17:30', subject: 'Mola', activity: 'Basketbol Kursuna Hazırlık', target: '-', completed: false },
+                { time: '17:30 - 19:00', subject: 'Basketbol Kursu', activity: '🏀 Basketbol Antrenmanı', target: '-', completed: false },
+                { time: '19:00 - 20:00', subject: 'Mola', activity: 'Akşam Yemeği & Hazırlık', target: '-', completed: false },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-', completed: false },
+                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: 'Yanlış Analizi & Dinlenme', target: '-', completed: false },
             ],
             cumartesi: [
-                { time: '08:00 - 13:00', subject: 'DYK Kursu', activity: '🏫 DYK Dersleri', target: '-' },
-                { time: '13:00 - 14:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-' },
-                { time: '14:00 - 15:00', subject: 'Genel Tekrar', activity: '🔁 Haftanın Önemli Konularına Göz At / Kısa Notlar', target: '-' },
-                { time: '15:00 - 16:00', subject: 'Yanlış Analizi', activity: '🧐 Yanlış Çözülen Soruları İncele & Nedenlerini Anla', target: '-' },
-                { time: '16:00 - 16:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
-                { time: '16:30 - 17:00', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
-                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
-                { time: '22:00 Sonrası', subject: 'Dinlenme', activity: '😴 Haftanın Yorğunluğunu At', target: '-' },
+                { time: '08:00 - 13:00', subject: 'DYK Kursu', activity: '🏫 DYK Dersleri', target: '-', completed: false },
+                { time: '13:00 - 14:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-', completed: false },
+                { time: '14:00 - 15:00', subject: 'Genel Tekrar', activity: '🔁 Haftanın Önemli Konularına Göz At / Kısa Notlar', target: '-', completed: false },
+                { time: '15:00 - 16:00', subject: 'Yanlış Analizi', activity: '🧐 Yanlış Çözülen Soruları İncele & Nedenlerini Anla', target: '-', completed: false },
+                { time: '16:00 - 16:30', subject: 'Mola', activity: 'Kısa Dinlenme', target: '-', completed: false },
+                { time: '16:30 - 17:00', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru', completed: false },
+                { time: '17:00 - 20:00', subject: 'Serbest Zaman', activity: 'Akşam Yemeği & Hazırlık', target: '-', completed: false },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-', completed: false },
+                { time: '22:00 Sonrası', subject: 'Dinlenme', activity: '😴 Haftanın Yorğunluğunu At', target: '-', completed: false },
             ],
             pazar: [
-                { time: '09:00 - 09:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
-                { time: '09:30 - 10:00', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '20 Soru' },
-                { time: '10:00 - 10:30', subject: 'İngilizce', activity: '🇬🇧 Konu Tekrarı & Soru', target: '10 Soru' },
-                { time: '10:30 Sonrası', subject: 'Dinlenme', activity: '🧘‍♂️ Dinlenme & Sosyal Aktiviteler', target: '-' },
-                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
-                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🚀 Yeni Haftaya Zihinsel Hazırlık', target: '-' },
+                { time: '09:00 - 09:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk', completed: false },
+                { time: '09:30 - 10:00', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '20 Soru', completed: false },
+                { time: '10:00 - 10:30', subject: 'İngilizce', activity: '🇬🇧 Konu Tekrarı & Soru', target: '10 Soru', completed: false },
+                { time: '10:30 Sonrası', subject: 'Dinlenme', activity: '🧘‍♂️ Dinlenme & Sosyal Aktiviteler', target: '-', completed: false },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-', completed: false },
+                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🚀 Yeni Haftaya Zihinsel Hazırlık', target: '-', completed: false },
             ],
         };
 
         let lgsProgramData = JSON.parse(JSON.stringify(baseSchedule)); // Deep copy base schedule
         
         // Firebase Configuration (Buraya kopyaladığınız kodu yapıştırdınız)
+        // DİKKAT: Aşağıdaki API anahtarını GitHub gibi herkese açık bir depoya YÜKLEMEYİN.
+        // Eğer bu dosya herkese açıksa, API anahtarınızı Firebase Konsolundan iptal edin ve yeni bir tane oluşturun.
+        // Yeni anahtarınızı buraya yapıştırın.
         const firebaseConfig = {
-  apiKey: "AIzaSyAlZkaeLCgtEFv5Ag0dKL5lzB9kYhjm6xM",
-  authDomain: "lgs-planla.firebaseapp.com",
+        apiKey: "AIzaSyAlZkaeLCgtEFv5Ag0dKL5lzB9kYhjm6xM",
+     authDomain: "lgs-planla.firebaseapp.com",
   projectId: "lgs-planla",
   storageBucket: "lgs-planla.firebasestorage.app",
   messagingSenderId: "174606157996",
   appId: "1:174606157996:web:5dcff52dc2feddf4bbf709"
-      
+};
+        
         // appId artık doğrudan firebaseConfig.projectId'den alınacak
         const appId = firebaseConfig.projectId; 
 
@@ -223,6 +229,8 @@
             const viewAnotherUserIdInput = document.getElementById('view-another-user-id');
             const viewAnotherUserButton = document.getElementById('view-another-user-btn');
             const backToMyProgramButton = document.getElementById('back-to-my-program-btn');
+            const navContainer = document.getElementById('day-navigation'); // Tanımla
+            const scheduleContainer = document.getElementById('schedule-container'); // Tanımla
 
             // Başlangıçta hoş geldin ekranını göster, Firebase'in yüklenmesini beklemeden.
             welcomeScreen.classList.remove('hidden');
@@ -424,7 +432,7 @@
             }
 
             function renderSchedule() {
-                const scheduleContainer = document.getElementById('schedule-container');
+                const scheduleContainer = document.getElementById('schedule-container'); // scheduleContainer'ı burada tekrar al
                 scheduleContainer.innerHTML = ''; 
 
                 for (const day in lgsProgramData) {
@@ -536,7 +544,8 @@
                     });
                     e.target.classList.add('active');
 
-                    contentContainer.querySelectorAll('.day-content').forEach(content => {
+                    // Düzeltme: contentContainer yerine scheduleContainer kullanıldı
+                    scheduleContainer.querySelectorAll('.day-content').forEach(content => {
                         content.classList.add('hidden');
                     });
                     
