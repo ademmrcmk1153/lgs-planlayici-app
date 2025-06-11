@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LGS İnteraktif Haftalık Planlayıcı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (Stone, Amber, Emerald, Sky) -->
+    <!-- Application Structure Plan: Tabbed single-page application. Users click on a day (Pazartesi, Salı, etc.) to view that day's schedule. This structure is chosen for its intuitive nature, mimicking a physical weekly planner and allowing the user to focus on one day at a time, reducing cognitive load. Each task can be marked as complete via a checkbox, providing immediate visual feedback and a sense of progress. -->
+    <!-- Visualization & Content Choices: The core report is a schedule. Goal: View and track tasks. Method: A structured HTML list for each day, styled with Tailwind CSS. Interaction: JS-powered tabs for day navigation and checkboxes for task completion. Unicode characters (📚, 🏀, 🎮) are used as simple, lightweight icons to improve scannability. Data persistence is added using browser's local storage. Justification: This approach directly serves the user's need to follow a schedule without unnecessary complexity. No charts are needed. CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+        }
+        .task-item.completed {
+            background-color: #dcfce7; /* emerald-100 */
+        }
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #6b7280; /* gray-500 */
+        }
+        .day-tab.active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .day-tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div id="loading-spinner" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+    </div>
+
+    <div id="message-box" class="fixed bottom-4 right-4 p-3 rounded-lg shadow-lg z-50 hidden"></div>
+
+    <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-100 to-sky-200 p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+            <h1 class="text-3xl font-bold text-sky-700 mb-6">LGS Planlayıcıya Hoş Geldiniz!</h1>
+            <p class="text-stone-600 mb-6">Programınızı kişiselleştirmek için lütfen adınızı ve soyadınızı girin.</p>
+            <div class="space-y-4">
+                <input type="text" id="welcome-name" placeholder="Adınız" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500">
+                <input type="text" id="welcome-surname" placeholder="Soyadınız" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500">
+                <button id="save-name-btn" class="w-full bg-sky-600 text-white font-semibold py-3 rounded-lg hover:bg-sky-700 transition-colors shadow-md">Kaydet ve Başla</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app-screen" class="container mx-auto max-w-4xl p-4 sm:p-6 lg:p-8 hidden">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-stone-900" id="user-name-display"></h1>
+            <p class="mt-2 text-sm text-stone-600" id="user-id-display"></p>
+            <p class="mt-4 text-md text-stone-700">7. Sınıftan 8'e hazırlık yolculuğun burada başlıyor!</p>
+        </header>
+
+        <section class="bg-blue-50 p-4 sm:p-6 rounded-xl shadow-inner mb-8 border border-blue-200">
+            <h3 class="text-lg font-semibold text-blue-800 mb-3">Program Paylaş / Başkasının Programını Görüntüle</h3>
+            <p class="text-sm text-blue-700 mb-4">Kendi programınızı arkadaşlarınızla paylaşmak için yukarıdaki "Kullanıcı ID'niz" kısmındaki ID'yi kullanın. Başka bir arkadaşınızın programını görüntülemek için ise onun ID'sini aşağıdaki alana girin.</p>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="view-another-user-id" placeholder="Görüntülemek istediğiniz Kullanıcı ID'si" class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="view-another-user-btn" class="bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md flex-shrink-0">Görüntüle</button>
+                <button id="back-to-my-program-btn" class="bg-gray-500 text-white font-semibold px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors shadow-md flex-shrink-0 hidden">Kendi Programıma Dön</button>
+            </div>
+        </section>
+
+        <nav id="day-navigation" class="flex flex-wrap justify-center gap-2 mb-8">
+            <button data-day="pazartesi" class="day-tab active px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-stone-200">Pazartesi</button>
+            <button data-day="sali" class="day-tab px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-stone-200">Salı</button>
+            <button data-day="carsamba" class="day-tab px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-stone-200">Çarşamba</button>
+            <button data-day="persembe" class="day-tab px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-stone-200">Perşembe</button>
+            <button data-day="cuma" class="day-tab px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-stone-200">Cuma</button>
+            <button data-day="cumartesi" class="day-tab px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-stone-200">Cumartesi</button>
+            <button data-day="pazar" class="day-tab px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-stone-200">Pazar</button>
+        </nav>
+
+        <main id="schedule-container" class="bg-white p-4 sm:p-6 rounded-2xl shadow-lg">
+            
+            <!-- Schedule content will be rendered here by JavaScript -->
+
+        </main>
+        
+        <footer class="mt-8 text-center text-sm text-stone-500 space-y-2">
+            <p><strong>Önemli Notlar:</strong> Bu program bir rehberdir, kendi öğrenme hızınıza ve enerji seviyenize göre ayarlamalar yapabilirsiniz. Sabit aktivite günlerinde (DYK, Basketbol) 300 soru hedefine ulaşmak zor olabilir, bu yüzden daha düşük ama verimli hedefler belirlenmiştir.</p>
+            <p><strong>Kitap Okuma:</strong> Günde en az 30 dakika kitap okumayı ihmal etmeyin. Bu, anlama becerinizi geliştirecektir.</p>
+            <p><strong>Yanlış Analizi:</strong> Her yanlış sorunuzu dikkatlice inceleyin ve neden yanlış yaptığınızı anlayın.</p>
+        </footer>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase and current user's schedule - DECLARED ONLY ONCE
+        let db; 
+        let auth;
+        let userId = null;
+        let userName = '';
+        let userSurname = '';
+        let currentViewUserId = null; 
+
+        // Define base schedule structure to ensure consistency
+        const baseSchedule = {
+            pazartesi: [
+                { time: '08:00 - 13:00', subject: 'DYK Kursu', activity: '🏫 DYK Dersleri', target: '-' },
+                { time: '13:00 - 14:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-' },
+                { time: '14:00 - 15:30', subject: 'Matematik', activity: '📚 Konu Tekrarı & Soru', target: '70 Soru' },
+                { time: '15:30 - 17:00', subject: 'Fen Bilimleri', activity: '🔬 Konu Tekrarı & Soru', target: '70 Soru' },
+                { time: '17:00 - 17:30', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
+                { time: '17:30 - 18:00', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '30 Soru' },
+                { time: '18:00 - 18:30', subject: 'İnkılap Tarihi', activity: '🇹🇷 Konu Tekrarı & Soru', target: '20 Soru' },
+                { time: '18:30 - 19:00', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
+                { time: '19:00 - 19:30', subject: 'İngilizce', activity: '🇬🇧 Konu Tekrarı & Soru', target: '10 Soru' },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
+                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🧐 Yanlış Analizi & Dinlenme', target: '-' },
+            ],
+            sali: [
+                { time: '09:00 - 10:30', subject: 'Türkçe', activity: '✍️ Konu Tekrarı & Soru', target: '80 Soru' },
+                { time: '10:30 - 12:00', subject: 'Matematik', activity: '📚 Konu Tekrarı & Soru', target: '80 Soru' },
+                { time: '12:00 - 13:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-' },
+                { time: '13:00 - 13:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
+                { time: '13:30 - 14:00', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
+                { time: '14:00 - 15:00', subject: 'İngilizce', activity: '🇬🇧 Konu Tekrarı & Soru', target: '40 Soru' },
+                { time: '15:00 - 16:00', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '40 Soru' },
+                { time: '16:00 - 16:30', subject: 'İnkılap Tarihi', activity: '🇹🇷 Konu Tekrarı & Soru', target: '20 Soru' },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
+                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🧐 Yanlış Analizi & Dinlenme', target: '-' },
+            ],
+            carsamba: [
+                { time: '08:00 - 13:00', subject: 'DYK Kursu', activity: '🏫 DYK Dersleri', target: '-' },
+                { time: '13:00 - 14:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-' },
+                { time: '14:00 - 14:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
+                { time: '14:30 - 15:30', subject: 'Fen Bilimleri', activity: '🔬 Konu Tekrarı & Soru', target: '50 Soru' },
+                { time: '15:30 - 16:30', subject: 'Türkçe', activity: '✍️ Konu Tekrarı & Soru', target: '50 Soru' },
+                { time: '16:30 - 17:00', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
+                { time: '17:00 - 17:30', subject: 'İnkılap Tarihi', activity: '🇹🇷 Konu Tekrarı & Soru', target: '30 Soru' },
+                { time: '17:30 - 19:00', subject: 'Basketbol Kursu', activity: '🏀 Basketbol Antrenmanı', target: '-' },
+                { time: '19:00 - 19:30', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '30 Soru' },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
+                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🧐 Yanlış Analizi & Dinlenme', target: '-' },
+            ],
+            persembe: [
+                { time: '09:00 - 10:30', subject: 'Matematik', activity: '📚 Konu Tekrarı & Soru', target: '80 Soru' },
+                { time: '10:30 - 12:00', subject: 'Fen Bilimleri', activity: '🔬 Konu Tekrarı & Soru', target: '80 Soru' },
+                { time: '12:00 - 13:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-' },
+                { time: '13:00 - 13:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
+                { time: '13:30 - 14:00', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
+                { time: '14:00 - 15:00', subject: 'İngilizce', activity: '🇬🇧 Konu Tekrarı & Soru', target: '40 Soru' },
+                { time: '15:00 - 16:00', subject: 'İnkılap Tarihi', activity: '🇹🇷 Konu Tekrarı & Soru', target: '40 Soru' },
+                { time: '16:00 - 16:30', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '20 Soru' },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
+                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🧐 Yanlış Analizi & Dinlenme', target: '-' },
+            ],
+            cuma: [
+                { time: '09:00 - 10:30', subject: 'Türkçe', activity: '✍️ Konu Tekrarı & Soru', target: '80 Soru' },
+                { time: '10:30 - 12:00', subject: 'Matematik', activity: '📚 Konu Tekrarı & Soru', target: '80 Soru' },
+                { time: '12:00 - 13:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-' },
+                { time: '13:00 - 13:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
+                { time: '13:30 - 14:00', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
+                { time: '14:00 - 15:00', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '40 Soru' },
+                { time: '15:00 - 15:45', subject: 'İnkılap Tarihi', activity: '🇹🇷 Konu Tekrarı & Soru', target: '30 Soru' },
+                { time: '15:45 - 16:15', subject: 'İngilizce', activity: '🇬🇧 Konu Tekrarı & Soru', target: '20 Soru' },
+                { time: '17:30 - 19:00', subject: 'Basketbol Kursu', activity: '🏀 Basketbol Antrenmanı', target: '-' },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
+                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🧐 Yanlış Analizi & Dinlenme', target: '-' },
+            ],
+            cumartesi: [
+                { time: '08:00 - 13:00', subject: 'DYK Kursu', activity: '🏫 DYK Dersleri', target: '-' },
+                { time: '13:00 - 14:00', subject: 'Mola', activity: '🥪 Öğle Yemeği & Dinlenme', target: '-' },
+                { time: '14:00 - 15:00', subject: 'Genel Tekrar', activity: '🔁 Haftanın Önemli Konularına Göz At / Kısa Notlar', target: '-' },
+                { time: '15:00 - 16:00', subject: 'Yanlış Analizi', activity: '🧐 Yanlış Çözülen Soruları İncele & Nedenlerini Anla', target: '-' },
+                { time: '16:00 - 16:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
+                { time: '16:30 - 17:00', subject: 'Türkçe', activity: '✍️ Paragraf Soru Çözümü', target: '20 Soru' },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
+                { time: '22:00 Sonrası', subject: 'Dinlenme', activity: '😴 Haftanın Yorğunluğunu At', target: '-' },
+            ],
+            pazar: [
+                { time: '09:00 - 09:30', subject: 'Kitap Okuma', activity: '📖 Kitap Okuma', target: '30 Dk' },
+                { time: '09:30 - 10:00', subject: 'Din Kültürü', activity: '🤲 Konu Tekrarı & Soru', target: '20 Soru' },
+                { time: '10:00 - 10:30', subject: 'İngilizce', activity: '🇬🇧 Konu Tekrarı & Soru', target: '10 Soru' },
+                { time: '10:30 Sonrası', subject: 'Dinlenme', activity: '🧘‍♂️ Dinlenme & Sosyal Aktiviteler', target: '-' },
+                { time: '20:00 - 22:00', subject: 'Maç', activity: '🎮 Sitede Maç', target: '-' },
+                { time: '22:00 Sonrası', subject: 'Serbest Zaman', activity: '🚀 Yeni Haftaya Zihinsel Hazırlık', target: '-' },
+            ],
+        };
+
+        let lgsProgramData = JSON.parse(JSON.stringify(baseSchedule)); // Deep copy base schedule
+        
+        // Firebase Configuration (Buraya kopyaladığınız kodu yapıştırdınız)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlZkaeLCgtEFv5Ag0dKL5lzB9kYhjm6xM", // Bu API anahtarınız daha önce doğrulanmış API key'dir.
+            authDomain: "lgs-planla.firebaseapp.com",
+            projectId: "lgs-planla",
+            storageBucket: "lgs-planla.firebasestorage.app",
+            messagingSenderId: "174606157996",
+            appId: "1:174606157996:web:a15088fddcd96068bbf709"
+        };
+        
+        // appId artık doğrudan firebaseConfig.projectId'den alınacak
+        const appId = firebaseConfig.projectId; 
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const mainAppScreen = document.getElementById('main-app-screen');
+            const welcomeNameInput = document.getElementById('welcome-name');
+            const welcomeSurnameInput = document.getElementById('welcome-surname');
+            const saveNameButton = document.getElementById('save-name-btn');
+            const userNameDisplay = document.getElementById('user-name-display');
+            const userIdDisplay = document.getElementById('user-id-display');
+            const messageBox = document.getElementById('message-box');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const viewAnotherUserIdInput = document.getElementById('view-another-user-id');
+            const viewAnotherUserButton = document.getElementById('view-another-user-btn');
+            const backToMyProgramButton = document.getElementById('back-to-my-program-btn');
+
+            // Başlangıçta hoş geldin ekranını göster, Firebase'in yüklenmesini beklemeden.
+            welcomeScreen.classList.remove('hidden');
+            mainAppScreen.classList.add('hidden'); // Ana ekranı gizle
+
+            // Firebase'i sadece yapılandırma geçerliyse başlat
+            if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    // Firebase Kimlik Doğrulama ve ilk yükleme mantığı
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            currentViewUserId = userId;
+                            const profileLoaded = await loadUserProfile(userId);
+                            if (profileLoaded) {
+                                showMainApp();
+                                await loadUserSchedule(userId);
+                            } else {
+                                // Kullanıcı oturum açmış ama profil verisi yok, isim/soyad almak için hoş geldin ekranını göster
+                                welcomeScreen.classList.remove('hidden');
+                                mainAppScreen.classList.add('hidden');
+                            }
+                        } else {
+                            // Hiçbir kullanıcı oturum açmamış, anonim oturum açmayı dene
+                            try {
+                                showLoading();
+                                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                    await signInWithCustomToken(auth, __initial_auth_token);
+                                } else {
+                                    await signInAnonymously(auth);
+                                }
+                            } catch (error) {
+                                displayMessage(`Oturum açma hatası: ${error.message}`, 'error');
+                                console.error('Auth error during initial load:', error);
+                                welcomeScreen.classList.remove('hidden'); // Hata durumunda hoş geldin ekranını göster
+                                mainAppScreen.classList.add('hidden');
+                            } finally {
+                                hideLoading();
+                            }
+                        }
+                    });
+                } catch (initError) {
+                    displayMessage(`Firebase başlatma hatası: ${initError.message}`, 'error');
+                    console.error('Firebase initialization error:', initError);
+                    // Firebase başlatılamazsa bile hoş geldin ekranı görünsün, ancak kaydetme özelliği çalışmaz.
+                    welcomeScreen.classList.remove('hidden'); 
+                    mainAppScreen.classList.add('hidden');
+                    userNameDisplay.textContent = `Hoş Geldiniz, Misafir!`; // Misafir olarak göster
+                    userIdDisplay.textContent = `Veri kaydedilemiyor.`;
+                    renderSchedule(); // Programı göster ama kaydetme/yükleme çalışmaz
+                    return; // Firebase başlatma hatası varsa daha fazla işlem yapma
+                }
+            } else {
+                displayMessage('Firebase yapılandırması eksik. Veriler kalıcı olarak kaydedilemeyecek.', 'error');
+                console.error('Firebase config is incomplete. Data persistence will not work.');
+                // Eğer Firebase yapılandırması eksikse, hoş geldin ekranını göster.
+                welcomeScreen.classList.remove('hidden'); 
+                mainAppScreen.classList.add('hidden');
+                userNameDisplay.textContent = `Hoş Geldiniz, Misafir!`;
+                userIdDisplay.textContent = `Veri kaydedilemiyor.`;
+                renderSchedule(); 
+                return; 
+            }
+
+            function showLoading() {
+                loadingSpinner.classList.remove('hidden');
+            }
+
+            function hideLoading() {
+                loadingSpinner.classList.add('hidden');
+            }
+
+            function displayMessage(message, type = 'info') {
+                messageBox.textContent = message;
+                messageBox.classList.remove('hidden', 'translate-y-full', 'bg-red-500', 'bg-green-500', 'bg-blue-500', 'text-white');
+                messageBox.classList.add('translate-y-0'); 
+
+                if (type === 'error') {
+                    messageBox.classList.add('bg-red-500', 'text-white');
+                } else if (type === 'success') {
+                    messageBox.classList.add('bg-green-500', 'text-white');
+                } else {
+                    messageBox.classList.add('bg-blue-500', 'text-white');
+                }
+                
+                setTimeout(() => {
+                    messageBox.classList.add('translate-y-full'); 
+                    setTimeout(() => messageBox.classList.add('hidden'), 300); 
+                }, 3000);
+            }
+
+            async function saveProfileAndSchedule(uid) {
+                if (!db) {
+                    displayMessage('Veritabanı mevcut değil. Kaydetme işlemi yapılamadı.', 'error');
+                    return;
+                }
+                showLoading();
+                try {
+                    const userProfileRef = doc(db, `artifacts/${appId}/users/${uid}/profile`, 'data');
+                    await setDoc(userProfileRef, { name: userName, surname: userSurname });
+
+                    const userScheduleRef = doc(db, `artifacts/${appId}/public/data/lgs_schedules`, uid);
+                    const serializableProgramData = {};
+                    for (const day in lgsProgramData) {
+                        serializableProgramData[day] = lgsProgramData[day].map(task => ({
+                            ...task,
+                            completed: task.completed || false 
+                        }));
+                    }
+                    await setDoc(userScheduleRef, { schedule: serializableProgramData });
+                    displayMessage('Profil ve program başarıyla kaydedildi!', 'success');
+                } catch (error) {
+                    displayMessage(`Kaydetme hatası: ${error.message}`, 'error');
+                    console.error('Save error:', error);
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            async function loadUserProfile(uid) {
+                if (!db) return false;
+                showLoading();
+                try {
+                    const userProfileRef = doc(db, `artifacts/${appId}/users/${uid}/profile`, 'data');
+                    const profileSnap = await getDoc(userProfileRef);
+                    if (profileSnap.exists()) {
+                        const data = profileSnap.data();
+                        userName = data.name;
+                        userSurname = data.surname;
+                        return true;
+                    }
+                } catch (error) {
+                    displayMessage(`Profil yükleme hatası: ${error.message}`, 'error');
+                    console.error('Load profile error:', error);
+                } finally {
+                    hideLoading();
+                }
+                return false;
+            }
+
+            async function loadUserSchedule(uidToLoad) {
+                if (!db) return false;
+                showLoading();
+                try {
+                    const scheduleRef = doc(db, `artifacts/${appId}/public/data/lgs_schedules`, uidToLoad);
+                    const scheduleSnap = await getDoc(scheduleRef);
+                    if (scheduleSnap.exists()) {
+                        const loadedSchedule = scheduleSnap.data().schedule;
+                        lgsProgramData = JSON.parse(JSON.stringify(baseSchedule)); 
+                        for (const day in loadedSchedule) {
+                            if (lgsProgramData[day]) { 
+                                loadedSchedule[day].forEach((loadedTask, index) => {
+                                    if (lgsProgramData[day][index]) { 
+                                        lgsProgramData[day][index].completed = loadedTask.completed || false;
+                                    }
+                                });
+                            }
+                        }
+                        renderSchedule();
+                        return true;
+                    }
+                } catch (error) {
+                    displayMessage(`Program yükleme hatası: ${error.message}`, 'error');
+                    console.error('Load schedule error:', error);
+                } finally {
+                    hideLoading();
+                }
+                return false;
+            }
+
+            async function updateTaskCompletion(dayId, taskIndex, completedStatus) {
+                if (!db || currentViewUserId !== userId) { 
+                    displayMessage('Sadece kendi programınızı düzenleyebilirsiniz.', 'info');
+                    return;
+                }
+                showLoading();
+                try {
+                    lgsProgramData[dayId][taskIndex].completed = completedStatus;
+                    const userScheduleRef = doc(db, `artifacts/${appId}/public/data/lgs_schedules`, userId);
+                    const serializableProgramData = {};
+                    for (const day in lgsProgramData) {
+                        serializableProgramData[day] = lgsProgramData[day].map(task => ({
+                            ...task,
+                            completed: task.completed 
+                        }));
+                    }
+                    await updateDoc(userScheduleRef, { schedule: serializableProgramData });
+                    displayMessage('Görev durumu güncellendi!', 'success');
+                } catch (error) {
+                    displayMessage(`Güncelleme hatası: ${error.message}`, 'error');
+                    console.error('Update task error:', error);
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            function renderSchedule() {
+                const scheduleContainer = document.getElementById('schedule-container');
+                scheduleContainer.innerHTML = ''; 
+
+                for (const day in lgsProgramData) {
+                    const dayContentDiv = document.createElement('div');
+                    dayContentDiv.id = day;
+                    dayContentDiv.classList.add('day-content', 'hidden'); 
+
+                    let dayDisplayName = '';
+                    let daySummary = '';
+                    switch (day) {
+                        case 'pazartesi': dayDisplayName = 'Pazartesi'; daySummary = '(DYK & Maç Günü - Yaklaşık 220 Soru)'; break;
+                        case 'sali': dayDisplayName = 'Salı'; daySummary = '(Maç Günü - Yaklaşık 280 Soru)'; break;
+                        case 'carsamba': dayDisplayName = 'Çarşamba'; daySummary = '(DYK, Basketbol & Maç Günü - Yaklaşık 180 Soru)'; break;
+                        case 'persembe': dayDisplayName = 'Perşembe'; daySummary = '(Maç Günü - Yaklaşık 280 Soru)'; break;
+                        case 'cuma': dayDisplayName = 'Cuma'; daySummary = '(Basketbol & Maç Günü - Yaklaşık 270 Soru)'; break;
+                        case 'cumartesi': dayDisplayName = 'Cumartesi'; daySummary = '(DYK & Maç Günü - Yaklaşık 20 Soru)'; break;
+                        case 'pazar': dayDisplayName = 'Pazar'; daySummary = '(Hafif Yoğunlaştırılmış Dinlenme & Maç Günü - Yaklaşık 30 Soru)'; break;
+                    }
+                    dayContentDiv.innerHTML = `<h2 class="text-2xl font-bold mb-4 border-b pb-2">${dayDisplayName} <span class="text-base font-normal text-stone-500">${daySummary}</span></h2><ul class="space-y-3 task-list"></ul>`;
+                    
+                    const taskList = dayContentDiv.querySelector('.task-list');
+                    lgsProgramData[day].forEach((task, index) => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('task-item', 'flex', 'items-center', 'p-3', 'rounded-lg', 'bg-stone-50');
+                        if (task.completed) {
+                            listItem.classList.add('completed');
+                        }
+                        listItem.innerHTML = `
+                            <input type="checkbox" class="mr-4 h-5 w-5 rounded border-gray-300 text-sky-600 focus:ring-sky-500" ${task.completed ? 'checked' : ''} ${currentViewUserId !== userId ? 'disabled' : ''}>
+                            <span class="flex-grow">
+                                <span class="font-semibold text-stone-500 mr-2">${task.time}</span> 
+                                <span class="task-text">${task.subject}: ${task.activity}</span>
+                            </span>
+                            ${task.target !== '-' ? `<span class="ml-auto text-sm font-semibold text-sky-700 bg-sky-100 px-2 py-1 rounded-md">🎯 ${task.target.replace('Soru', 'Soru').replace('Dk', 'Dk')}</span>` : ''}
+                        `;
+                        
+                        const checkbox = listItem.querySelector('input[type="checkbox"]');
+                        if (currentViewUserId === userId && db) { 
+                            checkbox.addEventListener('change', function(e) {
+                                updateTaskCompletion(day, index, e.target.checked);
+                                e.target.closest('.task-item').classList.toggle('completed', e.target.checked);
+                            });
+                        }
+                        taskList.appendChild(listItem);
+                    });
+                    scheduleContainer.appendChild(dayContentDiv);
+                }
+                const firstDayTab = document.querySelector('.day-tab');
+                if (firstDayTab) {
+                    firstDayTab.click(); 
+                }
+            }
+
+            saveNameButton.addEventListener('click', async function() {
+                userName = welcomeNameInput.value.trim();
+                userSurname = welcomeSurnameInput.value.trim();
+
+                if (userName && userSurname) {
+                    if (userId) { 
+                        await saveProfileAndSchedule(userId);
+                        showMainApp();
+                    } else {
+                        displayMessage('Oturum açılamadı. Lütfen tekrar deneyin.', 'error');
+                    }
+                } else {
+                    displayMessage('Lütfen adınızı ve soyadınızı girin.', 'error');
+                }
+            });
+
+            viewAnotherUserButton.addEventListener('click', async function() {
+                const targetUid = viewAnotherUserIdInput.value.trim();
+                if (targetUid) {
+                    currentViewUserId = targetUid;
+                    const loaded = await loadUserSchedule(targetUid);
+                    if (loaded) {
+                        displayMessage(`${targetUid} kullanıcısının programı yüklendi.`, 'success');
+                        document.querySelectorAll('.task-item input[type="checkbox"]').forEach(checkbox => {
+                            checkbox.disabled = true; 
+                        });
+                        backToMyProgramButton.classList.remove('hidden');
+                    } else {
+                        displayMessage('Belirtilen kullanıcı ID\'sine ait program bulunamadı.', 'error');
+                        currentViewUserId = userId; 
+                        await loadUserSchedule(userId); 
+                    }
+                } else {
+                    displayMessage('Lütfen bir kullanıcı ID\'si girin.', 'info');
+                }
+            });
+
+            backToMyProgramButton.addEventListener('click', async function() {
+                currentViewUserId = userId;
+                await loadUserSchedule(userId);
+                document.querySelectorAll('.task-item input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.disabled = false; 
+                });
+                backToMyProgramButton.classList.add('hidden');
+                displayMessage('Kendi programınıza geri döndünüz.', 'info');
+            });
+
+
+            const navContainer = document.getElementById('day-navigation');
+            navContainer.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON') {
+                    const targetDay = e.target.dataset.day;
+
+                    navContainer.querySelectorAll('.day-tab').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+
+                    contentContainer.querySelectorAll('.day-content').forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    
+                    document.getElementById(targetDay).classList.remove('hidden');
+                }
+            });
+
+            function showMainApp() {
+                welcomeScreen.classList.add('hidden');
+                mainAppScreen.classList.remove('hidden');
+                userNameDisplay.textContent = `Hoş Geldiniz, ${userName} ${userSurname}!`;
+                userIdDisplay.textContent = `Kullanıcı ID'niz: ${userId}`;
+                renderSchedule();
+            }
+        });
+    </script>
+</body>
+</html>
